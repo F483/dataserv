@@ -4,8 +4,11 @@ import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import datetime
+import mimetypes
 from dataserv.Farmer import Farmer, db
-from flask import Flask, make_response
+from dataserv.DataFile import DataFile, db2
+from werkzeug import secure_filename
+from flask import Flask, make_response, redirect, request, url_for
 
 
 # Initialize the Flask application
@@ -91,6 +94,35 @@ def online():
         output += text.format(farmer.btc_addr, last_seen, last_audit)
 
     return output
+
+
+# Route that will process the file upload
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    # Get the name of the uploaded file
+    file = request.files['file']
+
+    # Check if the file is one of the allowed types/extensions
+    if file:
+        # Make the filename safe, remove unsupported chars
+        filename = secure_filename(file.filename)
+
+        try:
+            # Move the file from the temporal folder the processing folder
+            process_filepath = os.path.join(app.config['TMP_DIR'], filename)
+            file.save(process_filepath)
+
+            # NewFile object will do processing
+            new_file = DataFile()
+            new_file.ingest_file(process_filepath)
+
+            # Returns the file hash
+            return redirect(url_for('index'))
+
+        except FileExistsError:
+            return "Duplicate file."
+    else:
+        return "Invalid file."
 
 
 if __name__ == '__main__':  # pragma: no cover
