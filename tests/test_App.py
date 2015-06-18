@@ -93,8 +93,7 @@ class AppTest(unittest.TestCase):
         # now test ping
         self.app.get('/api/ping/{0}'.format(addr))
 
-         # get online data
+        # get online data
         rv = self.app.get('/api/online')
         # see if that address is in the online status
         self.assertTrue(addr in str(rv.data))
-
