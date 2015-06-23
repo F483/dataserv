@@ -17,6 +17,7 @@ class DataFile(db2.Model):
     file_hash = db2.Column(db2.String(128), unique=True)
     state = db2.Column(db2.Integer)
     byte_size = db2.Column(db2.Integer)
+    seed = db2.Column(db2.String(128))
 
     def __init__(self):
         self.state = 0
